@@ -1,8 +1,8 @@
 context("nmadt.hsroc.MNAR")
 test_that("nmadt.hsroc.MNAR is working and the results are reproducible", {
 
-  kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-                     header=TRUE, sep=",")
+  data(dat.kang, package = "NMADTA")
+  kangdata <- dat.kang
   expect_error(nadt.hsroc(nstu=10, K=2, data=kangdata, testname=c("D-dimer","Ultrasonography")))
   expect_error(nadt.hsroc(nstu=12, K=1, data=kangdata, testname=c("D-dimer","Ultrasonography")))
   expect_error(nadt.hsroc(nstu=12, K=1, data=kangdata, testname=c("D-dimer")))

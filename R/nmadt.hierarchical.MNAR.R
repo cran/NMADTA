@@ -1,4 +1,4 @@
-#' Network Meta-Analysis Using the Hierarchical Model Under MNAR Assumptions
+#' Hierarchical Model Network Meta-Analysis of Diagnostic Accuracy Studies Under MNAR Assumptions
 #' @description \code{nmadt.hierarchical.MNAR} performs meta-analysis using the hierarchical model \insertCite{Ma2018}{NMADTA} based on the missing not at random(MNAR) assumption.
 #' @param nstu an integer indimessageing the number of studies included in the dataset.
 #' @param K an integer indicating the number of candiate test in the dataset.
@@ -29,14 +29,20 @@
 #' @param dic a logical value indicating whether the function will output the deviance information criterion (DIC) statistic. The default is \code{false}.
 #' @param mcmc.samples a logical value indicating whether the coda samples generated in the meta-analysis. The default is \code{FALSE}.
 #' @return A list with the raw output for graphing the results, the effect size estimates, which lists the posterior mean, standard deviation, median, and a $95$\% equal tail credible interval for the median.
+#'
+#' @note
+#' This example uses a small number of MCMC iterations (n.iter = 1000) for demonstration.
+#' For real-world analyses, longer chains (e.g., n.iter = 50000) are recommended
+#' to achieve convergence and stable posterior summaries.
+#' 
 #' @examples
-#' \donttest{
-#' kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-#' header=TRUE, sep=",")
+#' data(dat.kang)
 #' set.seed(9)
-#' kangMNAR.out <- nmadt.hierarchical.MNAR(nstu=12, K=2, data=kangdata, testname=c("D-dimer",
-#' "Ultrasonography"),gamma1=c(-0.5,-0.5), gamma0=c(-0.5,-0.5))
-#' }
+#' kang.out <- nmadt.hierarchical.MNAR(nstu = 12, K = 2, data = dat.kang,
+#'                                    directory = tempdir(), 
+#'                                    testname = c("D-dimer", "Ultrasonography"),
+#'                                    n.adapt = 1000, n.iter = 1000, n.chains = 3,
+#'                                    gamma1=c(-0.5,-0.5), gamma0=c(-0.5,-0.5))
 #' @import rjags
 #' @import coda
 #' @import MASS
@@ -45,14 +51,17 @@
 #' @importFrom Rdpack reprompt
 #' @references
 #' \insertRef{Ma2018}{NMADTA}
+#' 
+#' @keywords Test
+#' 
 #' @export
 nmadt.hierarchical.MNAR=function(nstu, K, data, testname, directory = NULL,
-                            diag = 5, off_diag = 0.05, digits = 4, mu_alpha = 0,
-                            mu_beta = 0, mu_eta = -0, preci_alpha = 0.1, preci_beta = 0.1, preci_eta = 0.1,
-                            gamma1, gamma0, mu_gamma = 0, preci_gamma = 1,
-                            n.burnin = floor(n.iter/2), n.thin = max(1, floor((n.iter - n.burnin)/1e+05)),
-                            n.adapt = 5000, n.iter = 50000, n.chains = 3,
-                            conv.diag = FALSE, trace = NULL, dic = FALSE, mcmc.samples = FALSE )
+                                 diag = 5, off_diag = 0.05, digits = 4, mu_alpha = 0,
+                                 mu_beta = 0, mu_eta = -0, preci_alpha = 0.1, preci_beta = 0.1, preci_eta = 0.1,
+                                 gamma1, gamma0, mu_gamma = 0, preci_gamma = 1,
+                                 n.burnin = floor(n.iter/2), n.thin = max(1, floor((n.iter - n.burnin)/1e+05)),
+                                 n.adapt = 5000, n.iter = 50000, n.chains = 3,
+                                 conv.diag = FALSE, trace = NULL, dic = FALSE, mcmc.samples = FALSE )
 {
   #options(warn = 1)
   if (missing(data))
@@ -126,16 +135,22 @@ nmadt.hierarchical.MNAR=function(nstu, K, data, testname, directory = NULL,
   monitor<-c('pi','post.Se','post.Sp','mu','Se.stud','Sp.stud','prev','ppv','npv','LRpos','LRneg','Cov','gamma0')
   data.jags <- list('n' = n, 'delta'=delta,'N' = N,'y'=y,'K'=K,'R'=R,'df'=df,'nstu'=nstu,'sid'=sid,'mu_alpha'=mu_alpha,'mu_beta'=mu_beta,'mu_eta'=mu_eta,'mu_gamma'=mu_gamma,
                     'preci_alpha'=preci_alpha,'preci_beta'=preci_beta,'preci_eta'=preci_eta,'preci_gamma'=preci_gamma, 'gamma1'=gamma1, 'gamma2'=gamma0, 'M'=M)
-  #rng.seeds <- sample(1e+06, n.chains)
-  init<-list()
+  seed <- sample(1000000, 1)
+  set.seed(seed)
+  init.seeds <- sample(1:100000, n.chains) 
+  
+  init<-vector("list", n.chains)
   mu.inits<-c(mu_eta,rep(c(mu_alpha,mu_beta),K))
   for(i in 1:n.chains){
     init[[i]]<-list(mu=mu.inits,.RNG.name = "base::Wichmann-Hill",
-                    .RNG.seed = i)
+                    .RNG.seed = init.seeds[i])
   }
   message("Start running MCMC...\n")
   model<-system.file("JAGSmodels", "model_h_MNAR.txt", package="NMADTA")
-  jags.m <-jags.model(model, data = data.jags,n.chains = n.chains, n.adapt = n.adapt)
+  
+  set.seed(seed)
+  jags.m <-jags.model(model, data = data.jags,inits = init,
+                      n.chains = n.chains, n.adapt = n.adapt)
   update(jags.m, n.iter = n.burnin)
   jags.out <- coda.samples(model = jags.m, variable.names = monitor,
                            n.iter = n.iter, thin = n.thin)
@@ -392,6 +407,10 @@ nmadt.hierarchical.MNAR=function(nstu, K, data, testname, directory = NULL,
       dev.off()
     }
   }
+  out$dat <- data
+  out$K <- K
+  out$nstu <- nstu
+  out$testname <- testname
   class(out) <- "nmadt"
   return(out)
   #options(warn = 0)

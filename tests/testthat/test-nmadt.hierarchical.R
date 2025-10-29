@@ -1,8 +1,8 @@
 context("nmadt.hierarchical")
 test_that("nmadt.hierarchical is working and the results are reproducible", {
 
-  kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-  header=TRUE, sep=",")
+  data(dat.kang, package = "NMADTA")
+  kangdata <- dat.kang
   kangdata<-kangdata[c(-4,-7)]
   kangdata<-kangdata[-(17:28),]
   kangdata$sid <- c(rep(c(1:9),each=4))

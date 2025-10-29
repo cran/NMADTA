@@ -2,7 +2,7 @@
 % Please edit documentation in R/nmadt.hsroc.MNAR.R
 \name{nmadt.hsroc.MNAR}
 \alias{nmadt.hsroc.MNAR}
-\title{Network Meta-Analysis Using the hierarchical model}
+\title{HSROC Model for Network Meta-Analysis of Diagnostic Accuracy Studies Under MNAR Assumptions}
 \usage{
 nmadt.hsroc.MNAR(
   nstu,
@@ -80,13 +80,13 @@ A list with the raw output for graphing the results, the effect size estimates, 
 }
 \examples{
 \donttest{
-kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-header=TRUE, sep=",")
+data(dat.kang)
 set.seed(9)
-kangMNAR.out.hsroc <- nmadt.hsroc.MNAR(nstu=12, K=2, data=kangdata,
+kangMNAR.out.hsroc <- nmadt.hsroc.MNAR(nstu=12, K=2, data=dat.kang,
 testname=c("D-dimer","Ultrasonography"),gamma1=c(-0.5,-0.5), gamma0=c(-0.5,-0.5))
 }
 }
 \references{
 \insertRef{lian2018bayesian}{NMADTA}
 }
+\keyword{Test}

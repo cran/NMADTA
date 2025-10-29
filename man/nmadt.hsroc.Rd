@@ -2,7 +2,7 @@
 % Please edit documentation in R/nmadt.hsroc.R
 \name{nmadt.hsroc}
 \alias{nmadt.hsroc}
-\title{Network Meta-Analysis Using the hierarchical model}
+\title{HSROC Model for Network Meta-Analysis of Diagnostic Accuracy Studies}
 \usage{
 nmadt.hsroc(
   nstu,
@@ -68,12 +68,12 @@ A list with the raw output for graphing the results, the effect size estimates, 
 }
 \examples{
 \donttest{
-kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-header=TRUE, sep=",")
+data(dat.kang)
 set.seed(9)
-kang.out.hsroc <- nmadt.hsroc(nstu=12, K=2, data=kangdata, testname=c("D-dimer","Ultrasonography"))
+kang.out.hsroc <- nmadt.hsroc(nstu=12, K=2, data=dat.kang, testname=c("D-dimer","Ultrasonography"))
 }
 }
 \references{
 \insertRef{lian2018bayesian}{NMADTA}
 }
+\keyword{Test}

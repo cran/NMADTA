@@ -2,7 +2,7 @@
 % Please edit documentation in R/nmadt.hierarchical.R
 \name{nmadt.hierarchical}
 \alias{nmadt.hierarchical}
-\title{Network Meta-Analysis Using the Hierarchical Model}
+\title{Hierarchical Model for Network Meta-Analysis of Diagnostic Accuracy Studies}
 \usage{
 nmadt.hierarchical(
   nstu,
@@ -84,14 +84,24 @@ A list with the raw output for graphing the results, the effect size estimates, 
 \description{
 \code{nmadt.hierarchical} performs meta-analysis using the hierarchical model \insertCite{Ma2018}{NMADTA} and outputs CIs for accuracy measurements.
 }
-\examples{
-\donttest{
-kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-header=TRUE, sep=",")
-set.seed(9)
-kang.out <- nmadt.hierarchical(nstu=12, K=2, data=kangdata, testname=c("D-dimer","Ultrasonography"))
+\note{
+This example uses a small number of MCMC iterations (n.iter = 500) for demonstration.
+For real-world analyses, longer chains (e.g., n.iter = 50000) are recommended
+to achieve convergence and stable posterior summaries.
 }
+\examples{
+
+data(dat.kang)
+set.seed(9)
+kang.out <- nmadt.hierarchical(nstu = 12, K = 2, data = dat.kang,
+                               directory = tempdir(), testname = c("D-dimer", "Ultrasonography"),
+                               diag = 5, off_diag = 0.05, digits = 4, mu_alpha = 0, mu_beta = 0,
+                               mu_eta = 0, preci_alpha = 0.1, preci_beta = 0.1, preci_eta = 0.1,
+                               n.adapt = 1000, n.iter = 500, n.chains = 3, conv.diag = TRUE,
+                               trace = "prev", dic = TRUE, mcmc.samples = FALSE)
+
 }
 \references{
 \insertRef{Ma2018}{NMADTA}
 }
+\keyword{Test}

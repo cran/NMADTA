@@ -1,4 +1,4 @@
-#' Network Meta-Analysis Using the hierarchical model
+#' HSROC Model for Network Meta-Analysis of Diagnostic Accuracy Studies
 #' @description \code{nmadt.hsroc} performs network meta-analysis of diagnostic tests using the HSROC (hierarchical summary receiver operating characteristic) model \insertCite{lian2018bayesian}{NMADTA} and outputs estimations of accuracy measurements.
 #' @param nstu an integer indicating the number of studies included in the dataset.
 #' @param K an integer indicating the number of candiate test in the dataset.
@@ -21,10 +21,9 @@
 #' @return A list with the raw output for graphing the results, the effect size estimates, which lists the posterior mean, standard deviation, median, and a $95$\% equal tail credible interval for the median.
 #' @examples
 #' \donttest{
-#' kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-#' header=TRUE, sep=",")
+#' data(dat.kang)
 #' set.seed(9)
-#' kang.out.hsroc <- nmadt.hsroc(nstu=12, K=2, data=kangdata, testname=c("D-dimer","Ultrasonography"))
+#' kang.out.hsroc <- nmadt.hsroc(nstu=12, K=2, data=dat.kang, testname=c("D-dimer","Ultrasonography"))
 #' }
 #' @import rjags
 #' @import coda
@@ -34,6 +33,9 @@
 #' @importFrom Rdpack reprompt
 #' @references
 #' \insertRef{lian2018bayesian}{NMADTA}
+#' 
+#' @keywords Test
+#' 
 #' @export
 nmadt.hsroc=function(nstu, K, data, testname, directory= NULL, eta=0, xi_preci=1.25, digits = 4,
                      n.adapt = 5000, n.iter = 50000, n.chains = 3,
@@ -95,15 +97,24 @@ nmadt.hsroc=function(nstu, K, data, testname, directory= NULL, eta=0, xi_preci=1
 
   monitor<-c("post.se","post.sp","beta","mu1","mu2","post.pi","loglik_dic","theta","alpha","pi","stud.se","stud.sp",'ppv','npv','LRpos','LRneg')
   data.jags <- list('n' = n, 'delta'=delta,'N' = N,'y'=y,'K'=K,'R1'=R1,'R2'=R2,'nstu'=nstu,'sid'=sid,'eta'=eta, 'xi_preci'=xi_preci)
-  #rng.seeds <- sample(1e+06, n.chains)
-  init<-list()
+  seed <- sample(1000000, 1)
+  set.seed(seed)
+  init.seeds <- sample(1:100000, n.chains) 
+  
+  init<-vector("list", n.chains)
+  
   for(i in 1:n.chains){
-    init[[i]]<-list(mu1=c((0+i*0.5),rep((0.2),K)),mu2=rep((1+i*0.3),K),beta=rep((0+0.3*i),K),.RNG.name = "base::Wichmann-Hill",
-                    .RNG.seed = i)
+    init[[i]]<-list(mu1=c((0+i*0.5),rep((0.2),K)),
+                    mu2=rep((1+i*0.3),K),beta=rep((0+0.3*i),K),
+                    .RNG.name = "base::Wichmann-Hill",
+                    .RNG.seed = init.seeds[i])
   }
   message("Start running MCMC...\n")
   model<-system.file("JAGSmodels", "model_hsroc.txt", package="NMADTA")
-  jags.m <-jags.model(model, data = data.jags,inits=init, n.chains = n.chains, n.adapt = n.adapt)
+  
+  set.seed(seed)
+  jags.m <-jags.model(model, data = data.jags, inits = init, 
+                      n.chains = n.chains, n.adapt = n.adapt)
   update(jags.m, n.iter = n.burnin)
   jags.out <- coda.samples(model = jags.m, variable.names = monitor,
                            n.iter = n.iter, thin = n.thin)
@@ -358,6 +369,10 @@ nmadt.hsroc=function(nstu, K, data, testname, directory= NULL, eta=0, xi_preci=1
       dev.off()
     }
   }
+  out$dat <- data
+  out$K <- K
+  out$nstu <- nstu
+  out$testname <- testname
   class(out) <- "nmadt"
   return(out)
   #options(warn = 0)

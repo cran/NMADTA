@@ -1,0 +1,29 @@
+#' @title Study-level results on the multiple diagnostic tests for colorectal cancer detection
+#'
+#' @description \code{dat.kang} provides an example dataset for hierarchical network meta-analysis 
+#' of diagnostic test accuracy under the missing not at random (MNAR) assumption. 
+#' The dataset is extracted from \insertCite{kang2013statistical}{NMADTA} and contains study-level 
+#' results from multiple diagnostic tests for colorectal cancer detection. 
+#' Each record corresponds to a study arm with test outcomes and missingness indicators. 
+#'
+#' @usage data(dat.kang)
+#'
+#' @format A data frame with 48 observations and 8 variables:
+#' \describe{
+#'   \item{sid}{Study identifier (integer)}
+#'   \item{delta0}{Missing indicator for test 0 (1 = observed, 0 = missing)}
+#'   \item{delta1}{Missing indicator for test 1 (1 = observed, 0 = missing)}
+#'   \item{delta2}{Missing indicator for test 2 (1 = observed, 0 = missing)}
+#'   \item{T0}{Test 0 result (1 = positive, 0 = negative, 999 = not applicable)}
+#'   \item{T1}{Test 1 result (1 = positive, 0 = negative, 999 = not applicable)}
+#'   \item{T2}{Test 2 result (1 = positive, 0 = negative, 999 = not applicable)}
+#'   \item{n}{Sample size for the corresponding cell}
+#' }
+#'
+#' @source \insertRef{kang2013statistical}{NMADTA}
+#'
+#'
+#' @examples
+#' data(dat.kang)
+#' head(dat.kang)
+"dat.kang"

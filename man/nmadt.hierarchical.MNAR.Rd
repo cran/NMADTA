@@ -2,7 +2,7 @@
 % Please edit documentation in R/nmadt.hierarchical.MNAR.R
 \name{nmadt.hierarchical.MNAR}
 \alias{nmadt.hierarchical.MNAR}
-\title{Network Meta-Analysis Using the Hierarchical Model Under MNAR Assumptions}
+\title{Hierarchical Model Network Meta-Analysis of Diagnostic Accuracy Studies Under MNAR Assumptions}
 \usage{
 nmadt.hierarchical.MNAR(
   nstu,
@@ -96,15 +96,21 @@ A list with the raw output for graphing the results, the effect size estimates, 
 \description{
 \code{nmadt.hierarchical.MNAR} performs meta-analysis using the hierarchical model \insertCite{Ma2018}{NMADTA} based on the missing not at random(MNAR) assumption.
 }
-\examples{
-\donttest{
-kangdata<-read.csv(file=system.file("extdata","kangdata.csv",package="NMADTA"),
-header=TRUE, sep=",")
-set.seed(9)
-kangMNAR.out <- nmadt.hierarchical.MNAR(nstu=12, K=2, data=kangdata, testname=c("D-dimer",
-"Ultrasonography"),gamma1=c(-0.5,-0.5), gamma0=c(-0.5,-0.5))
+\note{
+This example uses a small number of MCMC iterations (n.iter = 1000) for demonstration.
+For real-world analyses, longer chains (e.g., n.iter = 50000) are recommended
+to achieve convergence and stable posterior summaries.
 }
+\examples{
+data(dat.kang)
+set.seed(9)
+kang.out <- nmadt.hierarchical.MNAR(nstu = 12, K = 2, data = dat.kang,
+                                   directory = tempdir(), 
+                                   testname = c("D-dimer", "Ultrasonography"),
+                                   n.adapt = 1000, n.iter = 1000, n.chains = 3,
+                                   gamma1=c(-0.5,-0.5), gamma0=c(-0.5,-0.5))
 }
 \references{
 \insertRef{Ma2018}{NMADTA}
 }
+\keyword{Test}
